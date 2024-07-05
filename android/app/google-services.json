@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "503217039075",
+    "project_id": "ucccc-f4bb7",
+    "storage_bucket": "ucccc-f4bb7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503217039075:android:96e23bdb8c8cab150d07d6",
+        "android_client_info": {
+          "package_name": "com.ucccc.uccc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYfaha4PfZEPlQM_AqAC4O9CG12WsXfVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503217039075:android:5cca9b06c4d24bc80d07d6",
+        "android_client_info": {
+          "package_name": "com.ucccc.ucccc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYfaha4PfZEPlQM_AqAC4O9CG12WsXfVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
