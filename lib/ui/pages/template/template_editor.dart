@@ -5,9 +5,9 @@ import 'package:ucccc/ui/widgets/circle_button.dart';
 class TemplateEditor extends StatefulWidget {
   final String title;
   final bool mainTemplate;
+  final void Function(dynamic)? exitCallback;
 
-  const TemplateEditor(
-      {super.key, required this.title, required this.mainTemplate});
+  const TemplateEditor({super.key, required this.title, required this.mainTemplate, this.exitCallback});
 
   @override
   State<TemplateEditor> createState() => _TemplateEditorState();
@@ -16,19 +16,19 @@ class TemplateEditor extends StatefulWidget {
 class _TemplateEditorState extends State<TemplateEditor> {
   static Template _template = Template.empty();
   final List<String> _types = ['integer', 'text', 'logic', 'list', 'enum'];
-  List<(String, String?)> curList = List.empty(growable: true);
+  List<(String, String?)> currentList = List.empty(growable: true);
 
   @override
   Widget build(BuildContext context) {
     if (widget.mainTemplate) {
-      curList = _template.template;
+      currentList = _template.template;
     } else {
-      curList = [];
+      currentList = [];
       if (!_template.objects.containsKey(widget.title)) {
         _template.objects[widget.title] = <String, String?>{};
       }
-      _template.objects[widget.title]?.forEach((k, v) => curList.add((k, v)));
-      print(curList);
+      _template.objects[widget.title]?.forEach((k, v) => currentList.add((k, v)));
+      print(currentList);
     }
     return PopScope(
       canPop: false,
@@ -42,14 +42,14 @@ class _TemplateEditorState extends State<TemplateEditor> {
           final bool shouldPop = await _showBackDialog() ?? false;
           if (context.mounted && shouldPop) {
             _template = Template.empty();
+            widget.exitCallback?.call(currentList);
             Navigator.pop(context);
           }
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor:
-              Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: Text(widget.title),
           actions: [
             if (widget.mainTemplate) NewObjectButton(),
@@ -65,48 +65,40 @@ class _TemplateEditorState extends State<TemplateEditor> {
             child: Column(
               children: [
                 Table(
-                  columnWidths: const {
-                    0: FlexColumnWidth(1),
-                    1: IntrinsicColumnWidth()
-                  },
+                  columnWidths: const {0: FlexColumnWidth(1), 1: IntrinsicColumnWidth()},
                   defaultVerticalAlignment: TableCellVerticalAlignment.top,
                   children: [
-                    for (int i = 0; i < curList.length; ++i)
+                    for (int i = 0; i < currentList.length; ++i)
                       TableRow(
                         children: [
                           SizedBox(
                             height: 40,
                             child: TextFormField(
-                              initialValue: curList[i].$1,
+                              initialValue: currentList[i].$1,
                               onChanged: (text) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    _template.template[i] =
-                                        (text, curList[i].$2);
+                                    _template.template[i] = (text, currentList[i].$2);
                                   } else {
-                                    _template.objects[widget.title]
-                                        ?.remove(curList[i].$1);
-                                    _template.objects[widget.title]?[text] =
-                                        curList[i].$2;
+                                    _template.objects[widget.title]?.remove(currentList[i].$1);
+                                    _template.objects[widget.title]?[text] = currentList[i].$2;
                                   }
                                 });
                               },
                             ),
                           ),
                           DropdownButton(
-                              value: curList[i].$2,
+                              value: currentList[i].$2,
                               items: _types
-                                  .map((type) => DropdownMenuItem(
-                                      value: type, child: Text(type)))
+                                  .where((t) => t != widget.title)
+                                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
                                   .toList(),
                               onChanged: (type) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    _template.template[i] =
-                                        (curList[i].$1, type);
+                                    _template.template[i] = (currentList[i].$1, type);
                                   } else {
-                                    _template.objects[widget.title]
-                                        ?[curList[i].$1] = type;
+                                    _template.objects[widget.title]?[currentList[i].$1] = type;
                                   }
                                 });
                               })
@@ -119,17 +111,18 @@ class _TemplateEditorState extends State<TemplateEditor> {
                   child: Align(
                     alignment: Alignment.center,
                     child: CircleButton(
-                        size: 64,
-                        icon: Icons.add,
-                        onPressed: () {
-                          setState(() {
-                            if (widget.mainTemplate) {
-                              _template.template.add(('', null));
-                            } else {
-                              _template.objects[widget.title]![''] = null;
-                            }
-                          });
-                        }),
+                      size: 64,
+                      icon: Icons.add,
+                      onPressed: () {
+                        setState(() {
+                          if (widget.mainTemplate) {
+                            _template.template.add(('', null));
+                          } else {
+                            _template.objects[widget.title]![''] = null;
+                          }
+                        });
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -140,39 +133,37 @@ class _TemplateEditorState extends State<TemplateEditor> {
     );
   }
 
-  Future<bool?> _showBackDialog() {
-    return showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Exiting template creator'),
-          content: const Text(
-            'Are you sure you want to leave this page? Unsaved changes will be discarded.',
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Stay'),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
+  Future<bool?> _showBackDialog() => showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Exiting template creator'),
+            content: const Text(
+              'Are you sure you want to leave this page? Unsaved changes will be discarded.',
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Stay'),
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
               ),
-              child: const Text('Leave'),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Leave'),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+              ),
+            ],
+          );
+        },
+      );
 }
 
 class NewObjectButton extends StatelessWidget {
@@ -190,50 +181,47 @@ class NewObjectButton extends StatelessWidget {
 
   Future<void> _dialogBuilder(BuildContext context) {
     return showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AlertDialog(
-                title: const Center(child: Text('New object name')),
-                content: TextField(
-                  controller: _objectName,
-                ),
-                actions: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () =>
-                            Navigator.of(context, rootNavigator: true)
-                                .pop('dialog'),
-                      ),
-                      TextButton(
-                        child: const Text('Create'),
-                        onPressed: () {
-                          if (_objectName.text.isEmpty) {
-                            print(
-                                "There's no object name"); //TODO: Toast a message or change whole thing to form
-                          } else {
-                            Navigator.of(context, rootNavigator: true)
-                                .pop('dialog');
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => TemplateEditor(
-                                title: _objectName.text,
-                                mainTemplate: false,
-                              ),
-                            ));
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+      context: context,
+      builder: (BuildContext context) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AlertDialog(
+              title: const Center(child: Text('New object name')),
+              content: TextField(
+                controller: _objectName,
               ),
-            ],
-          );
-        });
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      child: const Text('Cancel'),
+                      onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+                    ),
+                    TextButton(
+                      child: const Text('Create'),
+                      onPressed: () {
+                        if (_objectName.text.isEmpty) {
+                          print("There's no object name"); //TODO: Toast a message or change whole thing to form
+                        } else {
+                          Navigator.of(context, rootNavigator: true).pop('dialog');
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => TemplateEditor(
+                              title: _objectName.text,
+                              mainTemplate: false,
+                            ),
+                          ));
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 }
