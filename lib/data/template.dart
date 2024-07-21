@@ -1,13 +1,15 @@
 class Template {
-  final Map<String, Map<String, String?>> objects;
+  final List<(String, List<(String, String?)>)> objects;
   final List<(String, String?)> template;
 
   Template.empty()
-      : objects = {},
+      : objects = [],
         template = [];
 
   Map<String, dynamic> toMap() => {
-        'objects': objects.entries.map((entry) => {'name': entry.key, "entries": entry.value}).toList(),
+        'objects': Map.fromEntries(objects.map((entry) =>
+            MapEntry(entry.$1, Map.fromEntries(entry.$2.map((e) =>
+                MapEntry(e.$1, e.$2)))))),
         'template': Map.fromEntries(template.map((entry) => MapEntry(entry.$1, entry.$2))),
       };
 

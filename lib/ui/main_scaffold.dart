@@ -65,7 +65,7 @@ class MainScaffold extends StatelessWidget {
                           size: 80,
                           icon: Icons.bookmark_add,
                           onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => const TemplateEditor(title: "New template", mainTemplate: true,)),
+                            MaterialPageRoute(builder: (context) => TemplateEditor(title: "New template", mainTemplate: true,)),
                           ),
                         ),
                       ],
