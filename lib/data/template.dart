@@ -1,5 +1,5 @@
 class Template {
-  final List<(String, List<(String, String?)>)> objects;
+  List<(String, List<(String, String?)>)> objects;
   final List<(String, String?)> template;
 
   Template.empty()
