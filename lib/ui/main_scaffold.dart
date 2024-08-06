@@ -57,7 +57,14 @@ class MainScaffold extends StatelessWidget {
                               size: 32,
                               icon: Icons.cookie_outlined,
                               onPressed: () async {
-                                print((await FirebaseFirestore.instance.collection('templates').count().get()).count);
+                                final templates = FirebaseFirestore.instance.collection('templates');
+                                // final query = templates.count();
+                                // final AggregateQuerySnapshot result = await query.get();
+                                // print(result.count);
+                                final result = await templates.get();
+                                for (final template in result.docs) {
+                                  print(template.data());
+                                }
                               },
                             ),
                             CircleButton(

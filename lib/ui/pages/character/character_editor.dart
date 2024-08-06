@@ -10,11 +10,10 @@ class CharacterEditor extends StatelessWidget {
           backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: const Text('Character Editor'),
         ),
-        body:  Center(
+        body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-            ],
+            children: [],
           ),
         ),
       );

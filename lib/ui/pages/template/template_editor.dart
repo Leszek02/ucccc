@@ -19,56 +19,50 @@ class TemplateEditorState extends State<TemplateEditor> {
   Template template = Template.empty();
   final List<String> _types = ['integer', 'text', 'logic', 'list', 'enum'];
   List<(String, String?)> currentList = List.empty(growable: true);
-  final TextEditingController _objectName = TextEditingController();
+  final TextEditingController _objectName = TextEditingController(), _templateName = TextEditingController();
+
   int index = 0;
 
   Future<void> _dialogBuilder(BuildContext context, Template template) {
     _objectName.text = "";
     return showDialog<void>(
       context: context,
-      builder: (BuildContext context) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AlertDialog(
-              title: const Center(child: Text('New object name')),
-              content: TextField(controller: _objectName),
-              actions: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      child: const Text('Cancel'),
-                      onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
-                    ),
-                    TextButton(
-                      child: const Text('Create'),
-                      onPressed: () {
-                        if (_objectName.text.isEmpty) {
-                          print('There\'s no object name'); //TODO: Toast a message or change whole thing to a form
-                        } else {
-                          setState(() => template.objects.add((_objectName.text, List.empty(growable: true))));
-                          _types.add(_objectName.text);
-                          Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => TemplateEditor(
-                                  title: _objectName.text,
-                                  mainTemplate: false,
-                                  exitCallback: exitCallback,
-                                  objectList: template.objects),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+      builder: (BuildContext context) => AlertDialog(
+        title: const Center(child: Text('New object name')),
+        content: TextField(controller: _objectName),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+              ),
+              TextButton(
+                child: const Text('Create'),
+                onPressed: () {
+                  if (_objectName.text.isEmpty) {
+                    print('There\'s no object name'); //TODO: Toast a message or change whole thing to a form
+                  } else {
+                    setState(() => template.objects.add((_objectName.text, List.empty(growable: true))));
+                    _types.add(_objectName.text);
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TemplateEditor(
+                            title: _objectName.text,
+                            mainTemplate: false,
+                            exitCallback: exitCallback,
+                            objectList: template.objects),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -150,9 +144,34 @@ class TemplateEditorState extends State<TemplateEditor> {
             IconButton(
               icon: const Icon(Icons.save),
               onPressed: () {
-                // TODO Here save to local && remote database
-                FirebaseFirestore.instance.collection('templates').add(template.toMap());
-                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Center(child: Text('Template name')),
+                    content: TextField(controller: _templateName),
+                    actions: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton(
+                            child: const Text('Cancel'),
+                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+                          ),
+                          TextButton(
+                            child: const Text('Save'),
+                            onPressed: () {
+                              // TODO Here save to local && remote database
+                              template.name = _templateName.text;
+                              FirebaseFirestore.instance.collection('templates').add(template.toMap());
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
             if (widget.mainTemplate)
@@ -307,5 +326,3 @@ class TemplateEditorState extends State<TemplateEditor> {
     );
   }
 }
-
-
