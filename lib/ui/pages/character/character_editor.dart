@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ucccc/ui/widgets/circle_button.dart';
 
 class CharacterEditor extends StatelessWidget {
   const CharacterEditor({super.key});
@@ -9,11 +10,10 @@ class CharacterEditor extends StatelessWidget {
           backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: const Text('Character Editor'),
         ),
-        body: const Center(
+        body:  Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('This is the character editor. Duh'),
             ],
           ),
         ),
