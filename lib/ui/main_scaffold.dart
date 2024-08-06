@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ucccc/ui/pages/character/character_editor.dart';
 import 'package:ucccc/ui/pages/profile/profile_page.dart';
@@ -51,7 +52,14 @@ class MainScaffold extends StatelessWidget {
                                 MaterialPageRoute(builder: (context) => const ProfilePage()),
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            //const SizedBox(height: 32),
+                            CircleButton(
+                              size: 32,
+                              icon: Icons.cookie_outlined,
+                              onPressed: () async {
+                                print((await FirebaseFirestore.instance.collection('templates').count().get()).count);
+                              },
+                            ),
                             CircleButton(
                               size: 64,
                               icon: Icons.settings,
@@ -65,7 +73,12 @@ class MainScaffold extends StatelessWidget {
                           size: 80,
                           icon: Icons.bookmark_add,
                           onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => TemplateEditor(title: "New template", mainTemplate: true,)),
+                            MaterialPageRoute(
+                              builder: (context) => const TemplateEditor(
+                                title: "New template",
+                                mainTemplate: true,
+                              ),
+                            ),
                           ),
                         ),
                       ],
