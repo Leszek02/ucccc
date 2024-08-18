@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ucccc/ui/pages/character/character_editor.dart';
-import 'package:ucccc/ui/pages/profile/profile_page.dart';
-import 'package:ucccc/ui/pages/settings/settings_page.dart';
+import 'package:ucccc/ui/pages/characters_database/character_database.dart';
+import 'package:ucccc/ui/pages/templates_databse/templates_database.dart';
 import 'package:ucccc/ui/pages/template/template_editor.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 

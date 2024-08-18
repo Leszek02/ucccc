@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('This is the profile page. Duh'),
+              Text('This is the characters_database page. Duh'),
             ],
           ),
         ),
