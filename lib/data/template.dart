@@ -1,8 +1,9 @@
+typedef FieldList = List<(String, String?)>;
+
 class Template {
-  typedef FieldList = List<(String, String?)>;
 
   String _name;
-  List<(String, EntryList)> objects;
+  List<(String, FieldList)> objects;
   final FieldList _template;
 
   Template.empty()
