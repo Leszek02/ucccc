@@ -47,9 +47,9 @@ class MainScaffold extends StatelessWidget {
                           children: [
                             CircleButton(
                               size: 64,
-                              icon: Icons.person,
+                              icon: Icons.people,
                               onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const ProfilePage()),
+                                MaterialPageRoute(builder: (context) => const CharacterDatabasePage()),
                               ),
                             ),
                             //const SizedBox(height: 32),
@@ -69,9 +69,9 @@ class MainScaffold extends StatelessWidget {
                             ),
                             CircleButton(
                               size: 64,
-                              icon: Icons.settings,
+                              icon: Icons.bookmarks,
                               onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const SettingsPage()),
+                                MaterialPageRoute(builder: (context) => const CharactersDatabasePage()),
                               ),
                             ),
                           ],
