@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ucccc/ui/widgets/circle_button.dart';
 
 class CharacterEditor extends StatelessWidget {
   const CharacterEditor({super.key});

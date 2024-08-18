@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ucccc/data/template.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 
+// TODO: Open existing template, Enum editor, object change name, print enum in drawer, check new object dup names, check template name, emlum picker
+
 class TemplateEditor extends StatefulWidget {
   final String title;
   final bool mainTemplate;
@@ -23,12 +25,12 @@ class TemplateEditorState extends State<TemplateEditor> {
 
   int index = 0;
 
-  Future<void> _dialogBuilder(BuildContext context, Template template) {
+  Future<void> _newObjectEnumDialog(BuildContext context, Template template, String title) {
     _objectName.text = "";
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Center(child: Text('New object name')),
+        title: Center(child: Text(title)),
         content: TextField(controller: _objectName),
         actions: [
           Row(
@@ -160,7 +162,7 @@ class TemplateEditorState extends State<TemplateEditor> {
                           TextButton(
                             child: const Text('Save'),
                             onPressed: () {
-                              // TODO Here save to local && remote database
+                              // TODO Here save to local
                               template.name = _templateName.text;
                               FirebaseFirestore.instance.collection('templates').add(template.toMap());
                               Navigator.of(context).pop();
@@ -175,11 +177,6 @@ class TemplateEditorState extends State<TemplateEditor> {
               },
             ),
             if (widget.mainTemplate)
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () => _dialogBuilder(context, template),
-              ),
-            if (widget.mainTemplate)
               Builder(builder: (context) {
                 return IconButton(
                     icon: const Icon(Icons.menu),
@@ -190,18 +187,17 @@ class TemplateEditorState extends State<TemplateEditor> {
           ],
         ),
         endDrawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
+          child: Column(
             children: [
               SizedBox(
                 height: 100,
                 child: DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.75),
-                  ),
-                  child: const Center(child: Text('Your objects')),
+                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.75)),
+                  child: const Center(child: Text('Objects & Enums')),
                 ),
               ),
+              Text("Your Objects"),
+              Divider(color: Colors.black),
               for (int i = 0; i < template.objects.length; ++i)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -213,10 +209,11 @@ class TemplateEditorState extends State<TemplateEditor> {
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => TemplateEditor(
-                                  title: template.objects[i].$1,
-                                  mainTemplate: false,
-                                  exitCallback: exitCallback,
-                                  objectList: template.objects),
+                                title: template.objects[i].$1,
+                                mainTemplate: false,
+                                exitCallback: exitCallback,
+                                objectList: template.objects,
+                              ),
                             ),
                           ),
                         ),
@@ -248,6 +245,35 @@ class TemplateEditorState extends State<TemplateEditor> {
                         },
                       ),
                     ],
+                  ),
+                ),
+              Divider(color: Colors.black),
+              Text('Your Enums'),
+              Divider(color: Colors.black),
+              if (widget.mainTemplate)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      children: [
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () => _newObjectEnumDialog(context, template, 'New Object name'),
+                          ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: IconButton(
+                              icon: const Icon(Icons.category),
+                              onPressed: () => _newObjectEnumDialog(context, template, 'New Enum name'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
