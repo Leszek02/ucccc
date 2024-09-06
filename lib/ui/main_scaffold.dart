@@ -13,16 +13,15 @@ class MainScaffold extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
-          title: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text('U', style: TextStyle(fontSize: 48)),
-              for (int i = 0; i < 4; ++i) Text('C', style: TextStyle(fontSize: 40 - 8.0 * i)),
-            ],
-          ),
+          title: const SizedBox(height: 32, child: Image(image: AssetImage("assets/logo.png"))),
         ),
         body: Container(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          decoration: BoxDecoration(
+              image: DecorationImage(
+            image: AssetImage("assets/SZAPKI_ENLIGHTENED.png"),
+            fit: BoxFit.cover,
+          )),
+          //color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
           child: Center(
             child: LayoutBuilder(
               builder: (context, constraints) => SizedBox(
