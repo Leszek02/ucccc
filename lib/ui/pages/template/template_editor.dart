@@ -3,15 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:ucccc/data/template.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 
-// TODO: Open existing template, Enum editor, object change name, print enum in drawer, check new object dup names, check template name, emlum picker
+// TODO: Enum editor, object change name, print enum in drawer, check new object dup names, check template name, emlum picker
 
 class TemplateEditor extends StatefulWidget {
   final String title;
   final bool mainTemplate;
   final void Function((String, List<(String, String?)>))? exitCallback;
-  final List<(String, List<(String, String?)>)>? objectList;
 
-  const TemplateEditor({super.key, required this.title, required this.mainTemplate, this.exitCallback, this.objectList});
+  //final List<(String, List<(String, String?)>)>? objectList;
+  final Template? template;
+
+  const TemplateEditor(
+      {super.key,
+      required this.title,
+      required this.mainTemplate,
+      this.exitCallback,
+      this.template});
 
   @override
   State<TemplateEditor> createState() => TemplateEditorState();
@@ -21,12 +28,14 @@ class TemplateEditorState extends State<TemplateEditor> {
   Template template = Template.empty();
   final List<String> _types = ['integer', 'text', 'logic', 'list', 'enum'];
   List<(String, String?)> currentList = List.empty(growable: true);
-  final TextEditingController _objectName = TextEditingController(), _templateName = TextEditingController();
+  final TextEditingController _objectName = TextEditingController(),
+      _templateName = TextEditingController();
 
   int index = 0;
 
-  Future<void> _newObjectEnumDialog(BuildContext context, Template template, String title) {
-    _objectName.text = "";
+  Future<void> _newObjectEnumDialog(
+      BuildContext context, Template template, String title, String? curName) {
+    _objectName.text = curName ?? "";
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -38,15 +47,18 @@ class TemplateEditorState extends State<TemplateEditor> {
             children: [
               TextButton(
                 child: const Text('Cancel'),
-                onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop('dialog'),
               ),
               TextButton(
                 child: const Text('Create'),
                 onPressed: () {
                   if (_objectName.text.isEmpty) {
-                    print('There\'s no object name'); //TODO: Toast a message or change whole thing to a form
+                    print(
+                        'There\'s no object name'); //TODO: Toast a message or change whole thing to a form
                   } else {
-                    setState(() => template.objects.add((_objectName.text, List.empty(growable: true))));
+                    setState(() => template.objects
+                        .add((_objectName.text, List.empty(growable: true))));
                     _types.add(_objectName.text);
                     Navigator.of(context, rootNavigator: true).pop();
                     Navigator.of(context).push(
@@ -55,7 +67,7 @@ class TemplateEditorState extends State<TemplateEditor> {
                             title: _objectName.text,
                             mainTemplate: false,
                             exitCallback: exitCallback,
-                            objectList: template.objects),
+                            template: template),
                       ),
                     );
                   }
@@ -82,12 +94,14 @@ class TemplateEditorState extends State<TemplateEditor> {
             content: Text(content),
             actions: <Widget>[
               TextButton(
-                style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
                 child: Text(cancel),
                 onPressed: () => Navigator.pop(context, false),
               ),
               TextButton(
-                style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
                 child: Text(confirm),
                 onPressed: () => Navigator.pop(context, true),
               ),
@@ -97,15 +111,17 @@ class TemplateEditorState extends State<TemplateEditor> {
       );
 
   void exitCallback((String, List<(String, String?)>) objectEntry) {
-    int index = template.objects.indexWhere((element) => element.$1 == objectEntry.$1);
+    int index =
+        template.objects.indexWhere((element) => element.$1 == objectEntry.$1);
     template.objects[index] = objectEntry;
   }
 
   @override
   initState() {
     super.initState();
-    if (!widget.mainTemplate) {
-      template.objects = widget.objectList!;
+    if (widget.template != null) {
+      template = widget.template!;
+      template.objects = widget.template!.objects;
       for (int i = 0; i < template.objects.length; ++i) {
         _types.add(template.objects[i].$1);
       }
@@ -117,7 +133,8 @@ class TemplateEditorState extends State<TemplateEditor> {
     if (widget.mainTemplate) {
       currentList = template.template;
     } else {
-      index = template.objects.indexWhere((element) => element.$1 == widget.title);
+      index =
+          template.objects.indexWhere((element) => element.$1 == widget.title);
       currentList = template.objects[index].$2;
     }
     return PopScope(
@@ -130,7 +147,8 @@ class TemplateEditorState extends State<TemplateEditor> {
         } else {
           final bool shouldPop = (await _showWarningDialog(
                 title: 'Exiting template creator',
-                content: 'Are you sure you want to leave this page? Unsaved changes will be discarded.',
+                content:
+                    'Are you sure you want to leave this page? Unsaved changes will be discarded.',
                 cancel: 'Stay',
                 confirm: 'Leave',
               )) ??
@@ -140,42 +158,47 @@ class TemplateEditorState extends State<TemplateEditor> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: Text(widget.title),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Center(child: Text('Template name')),
-                    content: TextField(controller: _templateName),
-                    actions: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            child: const Text('Cancel'),
-                            onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
-                          ),
-                          TextButton(
-                            child: const Text('Save'),
-                            onPressed: () {
-                              // TODO Here save to local
-                              template.name = _templateName.text;
-                              FirebaseFirestore.instance.collection('templates').add(template.toMap());
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            if (widget.mainTemplate)
+              IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Center(child: Text('Template name')),
+                      content: TextField(controller: _templateName),
+                      actions: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton(
+                              child: const Text('Cancel'),
+                              onPressed: () =>
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop('dialog'),
+                            ),
+                            TextButton(
+                              child: const Text('Save'),
+                              onPressed: () {
+                                template.name = _templateName.text;
+                                FirebaseFirestore.instance
+                                    .collection('templates')
+                                    .add(template.toMap());
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             if (widget.mainTemplate)
               Builder(builder: (context) {
                 return IconButton(
@@ -186,13 +209,18 @@ class TemplateEditorState extends State<TemplateEditor> {
               })
           ],
         ),
-        endDrawer: Drawer(
+        endDrawer: widget.mainTemplate
+            ? Drawer(
           child: Column(
             children: [
               SizedBox(
                 height: 100,
                 child: DrawerHeader(
-                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.75)),
+                  decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.75)),
                   child: const Center(child: Text('Objects & Enums')),
                 ),
               ),
@@ -212,7 +240,7 @@ class TemplateEditorState extends State<TemplateEditor> {
                                 title: template.objects[i].$1,
                                 mainTemplate: false,
                                 exitCallback: exitCallback,
-                                objectList: template.objects,
+                                template: template,
                               ),
                             ),
                           ),
@@ -227,19 +255,23 @@ class TemplateEditorState extends State<TemplateEditor> {
                         onPressed: () async {
                           final bool shouldDelete = await _showWarningDialog(
                                 title: 'Deleting object',
-                                content: 'Are you sure you want to delete this object?',
+                                content:
+                                    'Are you sure you want to delete this object?',
                                 cancel: 'No',
                                 confirm: 'Yes',
                               ) ??
                               false;
                           if (shouldDelete) {
                             for (int j = 0; j < template.objects.length; ++j) {
-                              template.objects[j].$2.removeWhere((element) => element.$2 == template.objects[i].$1);
+                              template.objects[j].$2.removeWhere((element) =>
+                                  element.$2 == template.objects[i].$1);
                             }
-                            template.template.removeWhere((element) => element.$2 == template.objects[i].$1);
+                            template.template.removeWhere((element) =>
+                                element.$2 == template.objects[i].$1);
                             _types.remove(template.objects[i].$1);
                             setState(() {
-                              template.objects.removeWhere((element) => element.$1 == template.objects[i].$1);
+                              template.objects.removeWhere((element) =>
+                                  element.$1 == template.objects[i].$1);
                             });
                           }
                         },
@@ -260,7 +292,8 @@ class TemplateEditorState extends State<TemplateEditor> {
                           alignment: Alignment.bottomLeft,
                           child: IconButton(
                             icon: const Icon(Icons.add),
-                            onPressed: () => _newObjectEnumDialog(context, template, 'New Object name'),
+                            onPressed: () => _newObjectEnumDialog(
+                                context, template, 'New Object name', null),
                           ),
                         ),
                         Expanded(
@@ -268,7 +301,8 @@ class TemplateEditorState extends State<TemplateEditor> {
                             alignment: Alignment.bottomRight,
                             child: IconButton(
                               icon: const Icon(Icons.category),
-                              onPressed: () => _newObjectEnumDialog(context, template, 'New Enum name'),
+                              onPressed: () => _newObjectEnumDialog(
+                                  context, template, 'New Enum name', null),
                             ),
                           ),
                         ),
@@ -278,14 +312,17 @@ class TemplateEditorState extends State<TemplateEditor> {
                 ),
             ],
           ),
-        ),
+        ) : null,
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
               children: [
                 Table(
-                  columnWidths: const {0: FlexColumnWidth(1), 1: IntrinsicColumnWidth()},
+                  columnWidths: const {
+                    0: FlexColumnWidth(1),
+                    1: IntrinsicColumnWidth()
+                  },
                   defaultVerticalAlignment: TableCellVerticalAlignment.top,
                   children: [
                     for (int i = 0; i < currentList.length; ++i)
@@ -298,9 +335,11 @@ class TemplateEditorState extends State<TemplateEditor> {
                               onChanged: (text) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    template.template[i] = (text, currentList[i].$2);
+                                    template.template[i] =
+                                        (text, currentList[i].$2);
                                   } else {
-                                    template.objects[index].$2[i] = (text, currentList[i].$2);
+                                    template.objects[index].$2[i] =
+                                        (text, currentList[i].$2);
                                   }
                                 });
                               },
@@ -310,14 +349,17 @@ class TemplateEditorState extends State<TemplateEditor> {
                               value: currentList[i].$2,
                               items: _types
                                   .where((t) => t != widget.title)
-                                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                                  .map((type) => DropdownMenuItem(
+                                      value: type, child: Text(type)))
                                   .toList(),
                               onChanged: (type) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    template.template[i] = (currentList[i].$1, type);
+                                    template.template[i] =
+                                        (currentList[i].$1, type);
                                   } else {
-                                    template.objects[index].$2[i] = (currentList[i].$1, type);
+                                    template.objects[index].$2[i] =
+                                        (currentList[i].$1, type);
                                   }
                                 });
                               })

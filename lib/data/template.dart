@@ -22,6 +22,24 @@ class Template {
 
   set name(String value) => _name = value;
 
+  // Ponieważ nie potrafiłem tego zrobić w konstruktorze (Typy się nie zgadzały) :c
+  Template transformFromMap(Map<String, dynamic> data) {
+    Template template = Template.empty();
+    template._name = data['name'];
+    for (var key in data['objects'].keys) {
+      List<(String, String?)> newObject = List.empty(growable: true);
+      print(data['objects'][key]);
+      for (var subkey in data['objects'][key].keys) {
+        newObject.add((subkey, data['objects'][key][subkey]));
+      }
+      template.objects.add((key, newObject));
+    }
+    for (var key in data['template'].keys) {
+      template._template.add((key, data['template'][key]));
+    }
+    return template;
+  }
+
   Map<String, dynamic> toMap() => {
         'objects': Map.fromEntries(
             objects.map((entry) => MapEntry(entry.$1, Map.fromEntries(entry.$2.map((e) => MapEntry(e.$1, e.$2)))))),

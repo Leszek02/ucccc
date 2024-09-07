@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ucccc/data/template.dart';
+import 'package:ucccc/ui/pages/template/template_editor.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 import 'package:ucccc/util/utility.dart';
 
@@ -17,12 +19,14 @@ class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: const Text('Templates'),
         ),
         body: Center(
           child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('templates').snapshots(),
+            stream:
+                FirebaseFirestore.instance.collection('templates').snapshots(),
             builder: (context, snapshot) => !snapshot.hasData
                 ? const Text('Loading...')
                 : ListView.builder(
@@ -58,7 +62,21 @@ class _TemplateView extends StatelessWidget {
                 ),
               ),
               // TODO Leszusiu odbierz prosze :((( (zrob edycje template)
-              IconButton(onPressed: () => print('edit template'), icon: const Icon(Icons.edit)), // Navigator.push(...)
+              IconButton(
+                  onPressed: () {
+                    Template template = Template.empty();
+                    template = template.transformFromMap(templateData);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TemplateEditor(
+                          title: templateData['name'],
+                          mainTemplate: true,
+                          template: template,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.edit)), // Navigator.push(...)
               IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: document.delete,

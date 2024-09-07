@@ -16,7 +16,7 @@ class MainScaffold extends StatelessWidget {
           title: const SizedBox(height: 32, child: Image(image: AssetImage("assets/logo.png"))),
         ),
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
               image: DecorationImage(
             image: AssetImage("assets/SZAPKI_ENLIGHTENED.png"),
             fit: BoxFit.cover,
