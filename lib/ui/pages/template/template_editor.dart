@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ucccc/data/template.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 
-// TODO: Enum editor, object change name, print enum in drawer, check new object dup names, check template name, emlum picker
+// TODO: Enum editor, print enum in drawer, check new object dup names, check template name, emlum picker
 
 class TemplateEditor extends StatefulWidget {
   final String title;
@@ -33,9 +33,9 @@ class TemplateEditorState extends State<TemplateEditor> {
 
   int index = 0;
 
-  Future<void> _newObjectEnumDialog(
-      BuildContext context, Template template, String title, String? curName) {
-    _objectName.text = curName ?? "";
+  Future<void> _editObjectEnumDialog(BuildContext context, Template template,
+      String title, String curName, bool object) {
+    _objectName.text = curName;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -51,7 +51,71 @@ class TemplateEditorState extends State<TemplateEditor> {
                     Navigator.of(context, rootNavigator: true).pop('dialog'),
               ),
               TextButton(
-                child: const Text('Create'),
+                child: Text('Rename'),
+                onPressed: () {
+                  if (_objectName.text.isEmpty) {
+                    print(
+                        'There\'s no object name'); //TODO: Toast a message or change whole thing to a form
+                  } else {
+
+                    setState(() {
+                      int index = 0;
+                      for (int i = 0; i < template.objects.length; ++i) {
+                        if (template.objects[i].$1 == curName) {
+                          index = i;
+                        }
+                        for (int j = 0; j < template.objects[i].$2.length; ++j) {
+                          if (template.objects[i].$2[j].$2 == curName) {
+                            template.objects[i].$2[j] = (template.objects[i].$2[j].$1, _objectName.text);
+                          }
+                        }
+                      }
+                      for (int i = 0; i < template.template.length; ++i) {
+                        if (template.template[i].$2 == curName) {
+                          template.template[i] = (template.template[i].$1, _objectName.text);
+                        }
+                      }
+                      template.objects.add((_objectName.text, template.objects[index].$2));
+                      template.objects.removeAt(index);
+                      for (int i = 0; i < _types.length; ++i) {
+                        if (_types[i] == curName) {
+                          index = i;
+                          break;
+                        }
+                      }
+                      _types.add(_objectName.text);
+                      _types.removeAt(index);
+                    });
+                    Navigator.of(context, rootNavigator: true).pop();
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _newObjectEnumDialog(
+      BuildContext context, Template template, String title) {
+    _objectName.text = "";
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Center(child: Text(title)),
+        content: TextField(controller: _objectName),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop('dialog'),
+              ),
+              TextButton(
+                child: Text('Create'),
                 onPressed: () {
                   if (_objectName.text.isEmpty) {
                     print(
@@ -211,108 +275,119 @@ class TemplateEditorState extends State<TemplateEditor> {
         ),
         endDrawer: widget.mainTemplate
             ? Drawer(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 100,
-                child: DrawerHeader(
-                  decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.75)),
-                  child: const Center(child: Text('Objects & Enums')),
-                ),
-              ),
-              Text("Your Objects"),
-              Divider(color: Colors.black),
-              for (int i = 0; i < template.objects.length; ++i)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ListTile(
-                          title: Text(template.objects[i].$1),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => TemplateEditor(
-                                title: template.objects[i].$1,
-                                mainTemplate: false,
-                                exitCallback: exitCallback,
-                                template: template,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 100,
+                      child: DrawerHeader(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.75)),
+                        child: const Center(child: Text('Objects & Enums')),
+                      ),
+                    ),
+                    Text("Your Objects"),
+                    Divider(color: Colors.black),
+                    for (int i = 0; i < template.objects.length; ++i)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ListTile(
+                                title: Text(template.objects[i].$1),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => TemplateEditor(
+                                      title: template.objects[i].$1,
+                                      mainTemplate: false,
+                                      exitCallback: exitCallback,
+                                      template: template,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit_note),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () async {
-                          final bool shouldDelete = await _showWarningDialog(
-                                title: 'Deleting object',
-                                content:
-                                    'Are you sure you want to delete this object?',
-                                cancel: 'No',
-                                confirm: 'Yes',
-                              ) ??
-                              false;
-                          if (shouldDelete) {
-                            for (int j = 0; j < template.objects.length; ++j) {
-                              template.objects[j].$2.removeWhere((element) =>
-                                  element.$2 == template.objects[i].$1);
-                            }
-                            template.template.removeWhere((element) =>
-                                element.$2 == template.objects[i].$1);
-                            _types.remove(template.objects[i].$1);
-                            setState(() {
-                              template.objects.removeWhere((element) =>
-                                  element.$1 == template.objects[i].$1);
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              Divider(color: Colors.black),
-              Text('Your Enums'),
-              Divider(color: Colors.black),
-              if (widget.mainTemplate)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: [
-                        Align(
-                          alignment: Alignment.bottomLeft,
-                          child: IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () => _newObjectEnumDialog(
-                                context, template, 'New Object name', null),
-                          ),
-                        ),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: IconButton(
-                              icon: const Icon(Icons.category),
-                              onPressed: () => _newObjectEnumDialog(
-                                  context, template, 'New Enum name', null),
+                            IconButton(
+                              icon: const Icon(Icons.edit_note),
+                              onPressed: () => _editObjectEnumDialog(
+                                  context,
+                                  template,
+                                  'Rename Object',
+                                  template.objects[i].$1,
+                                  true),
                             ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                final bool shouldDelete =
+                                    await _showWarningDialog(
+                                          title: 'Deleting object',
+                                          content:
+                                              'Are you sure you want to delete this object?',
+                                          cancel: 'No',
+                                          confirm: 'Yes',
+                                        ) ??
+                                        false;
+                                if (shouldDelete) {
+                                  for (int j = 0;
+                                      j < template.objects.length;
+                                      ++j) {
+                                    template.objects[j].$2.removeWhere(
+                                        (element) =>
+                                            element.$2 ==
+                                            template.objects[i].$1);
+                                  }
+                                  template.template.removeWhere((element) =>
+                                      element.$2 == template.objects[i].$1);
+                                  _types.remove(template.objects[i].$1);
+                                  setState(() {
+                                    template.objects.removeWhere((element) =>
+                                        element.$1 == template.objects[i].$1);
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    Divider(color: Colors.black),
+                    Text('Your Enums'),
+                    Divider(color: Colors.black),
+                    if (widget.mainTemplate)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Row(
+                            children: [
+                              Align(
+                                alignment: Alignment.bottomLeft,
+                                child: IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () => _newObjectEnumDialog(
+                                      context, template, 'New Object name'),
+                                ),
+                              ),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.category),
+                                    onPressed: () => _newObjectEnumDialog(
+                                        context, template, 'New Enum name'),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
                 ),
-            ],
-          ),
-        ) : null,
+              )
+            : null,
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8),
