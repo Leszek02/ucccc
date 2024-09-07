@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ucccc/data/template.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
 
-// TODO: Enum editor, print enum in drawer, check new object dup names, check template name, emlum picker
+// TODO: Enum editor, print enum in drawer, emlum picker, check template name
 
 class TemplateEditor extends StatefulWidget {
   final String title;
@@ -57,25 +57,31 @@ class TemplateEditorState extends State<TemplateEditor> {
                     print(
                         'There\'s no object name'); //TODO: Toast a message or change whole thing to a form
                   } else {
-
                     setState(() {
                       int index = 0;
                       for (int i = 0; i < template.objects.length; ++i) {
                         if (template.objects[i].$1 == curName) {
                           index = i;
                         }
-                        for (int j = 0; j < template.objects[i].$2.length; ++j) {
+                        for (int j = 0;
+                            j < template.objects[i].$2.length;
+                            ++j) {
                           if (template.objects[i].$2[j].$2 == curName) {
-                            template.objects[i].$2[j] = (template.objects[i].$2[j].$1, _objectName.text);
+                            template.objects[i].$2[j] = (
+                              template.objects[i].$2[j].$1,
+                              _objectName.text
+                            );
                           }
                         }
                       }
                       for (int i = 0; i < template.template.length; ++i) {
                         if (template.template[i].$2 == curName) {
-                          template.template[i] = (template.template[i].$1, _objectName.text);
+                          template.template[i] =
+                              (template.template[i].$1, _objectName.text);
                         }
                       }
-                      template.objects.add((_objectName.text, template.objects[index].$2));
+                      template.objects
+                          .add((_objectName.text, template.objects[index].$2));
                       template.objects.removeAt(index);
                       for (int i = 0; i < _types.length; ++i) {
                         if (_types[i] == curName) {
@@ -100,11 +106,31 @@ class TemplateEditorState extends State<TemplateEditor> {
   Future<void> _newObjectEnumDialog(
       BuildContext context, Template template, String title) {
     _objectName.text = "";
+    final formKey = GlobalKey<FormState>();
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Center(child: Text(title)),
-        content: TextField(controller: _objectName),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: _objectName,
+            decoration: const InputDecoration(
+              hintText: 'Please write a username',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter an object name'; // Inline validation message
+              }
+              for (var type in _types) {
+                if (type == value) {
+                  return 'This object already exists';
+                }
+              }
+              return null;
+            },
+          ),
+        ),
         actions: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -117,10 +143,7 @@ class TemplateEditorState extends State<TemplateEditor> {
               TextButton(
                 child: Text('Create'),
                 onPressed: () {
-                  if (_objectName.text.isEmpty) {
-                    print(
-                        'There\'s no object name'); //TODO: Toast a message or change whole thing to a form
-                  } else {
+                  if (formKey.currentState!.validate()) {
                     setState(() => template.objects
                         .add((_objectName.text, List.empty(growable: true))));
                     _types.add(_objectName.text);
