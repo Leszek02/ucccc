@@ -36,11 +36,31 @@ class TemplateEditorState extends State<TemplateEditor> {
   Future<void> _editObjectEnumDialog(BuildContext context, Template template,
       String title, String curName, bool object) {
     _objectName.text = curName;
+    final formKey = GlobalKey<FormState>();
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Center(child: Text(title)),
-        content: TextField(controller: _objectName),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: _objectName,
+            decoration: const InputDecoration(
+              hintText: 'Please write a username',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter an object name'; // Inline validation message
+              }
+              for (var type in _types) {
+                if (type == value) {
+                  return 'This object already exists';
+                }
+              }
+              return null;
+            },
+          ),
+        ),
         actions: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -53,10 +73,7 @@ class TemplateEditorState extends State<TemplateEditor> {
               TextButton(
                 child: Text('Rename'),
                 onPressed: () {
-                  if (_objectName.text.isEmpty) {
-                    print(
-                        'There\'s no object name'); //TODO: Toast a message or change whole thing to a form
-                  } else {
+                  if (formKey.currentState!.validate()) {
                     setState(() {
                       int index = 0;
                       for (int i = 0; i < template.objects.length; ++i) {
