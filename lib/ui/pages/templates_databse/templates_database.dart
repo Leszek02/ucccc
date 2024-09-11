@@ -120,7 +120,7 @@ class _TemplateView extends StatelessWidget {
                   onError: (error) => showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text('Error'),
+                      title: const Text('Error'),
                       content: Form(child: Text(error.toString())),
                       actions: [TextButton(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
                     ),
@@ -135,6 +135,7 @@ class _TemplateView extends StatelessWidget {
                           title: template.name,
                           mainTemplate: true,
                           template: template,
+                          documentId: document.id,
                         ),
                       ),
                     );

@@ -8,12 +8,19 @@ import 'package:ucccc/ui/widgets/circle_button.dart';
 class TemplateEditor extends StatefulWidget {
   final String title;
   final bool mainTemplate;
+  final String? documentId;
   final void Function((String, List<(String, String?)>))? exitCallback;
 
   //final List<(String, List<(String, String?)>)>? objectList;
   final Template? template;
 
-  const TemplateEditor({super.key, required this.title, required this.mainTemplate, this.exitCallback, this.template});
+  const TemplateEditor(
+      {super.key,
+      required this.title,
+      required this.mainTemplate,
+      this.exitCallback,
+      this.template,
+      this.documentId});
 
   @override
   State<TemplateEditor> createState() => TemplateEditorState();
@@ -23,11 +30,13 @@ class TemplateEditorState extends State<TemplateEditor> {
   Template template = Template.empty();
   final List<String> _types = ['integer', 'text', 'logic', 'list', 'enum'];
   List<(String, String?)> currentList = List.empty(growable: true);
-  final TextEditingController _objectName = TextEditingController(), _templateName = TextEditingController();
+  final TextEditingController _objectName = TextEditingController(),
+      _templateName = TextEditingController();
 
   int index = 0;
 
-  Future<void> _editObjectEnumDialog(BuildContext context, Template template, String title, String curName, bool object) {
+  Future<void> _editObjectEnumDialog(BuildContext context, Template template,
+      String title, String curName, bool object) {
     _objectName.text = curName;
     final formKey = GlobalKey<FormState>();
     return showDialog<void>(
@@ -39,7 +48,7 @@ class TemplateEditorState extends State<TemplateEditor> {
           child: TextFormField(
             controller: _objectName,
             decoration: const InputDecoration(
-              hintText: 'Please write a username',
+              hintText: 'Please write an object name',
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -60,10 +69,11 @@ class TemplateEditorState extends State<TemplateEditor> {
             children: [
               TextButton(
                 child: const Text('Cancel'),
-                onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop('dialog'),
               ),
               TextButton(
-                child: Text('Rename'),
+                child: const Text('Rename'),
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
                     setState(() {
@@ -72,18 +82,25 @@ class TemplateEditorState extends State<TemplateEditor> {
                         if (template.objects[i].$1 == curName) {
                           index = i;
                         }
-                        for (int j = 0; j < template.objects[i].$2.length; ++j) {
+                        for (int j = 0;
+                            j < template.objects[i].$2.length;
+                            ++j) {
                           if (template.objects[i].$2[j].$2 == curName) {
-                            template.objects[i].$2[j] = (template.objects[i].$2[j].$1, _objectName.text);
+                            template.objects[i].$2[j] = (
+                              template.objects[i].$2[j].$1,
+                              _objectName.text
+                            );
                           }
                         }
                       }
                       for (int i = 0; i < template.template.length; ++i) {
                         if (template.template[i].$2 == curName) {
-                          template.template[i] = (template.template[i].$1, _objectName.text);
+                          template.template[i] =
+                              (template.template[i].$1, _objectName.text);
                         }
                       }
-                      template.objects.add((_objectName.text, template.objects[index].$2));
+                      template.objects
+                          .add((_objectName.text, template.objects[index].$2));
                       template.objects.removeAt(index);
                       for (int i = 0; i < _types.length; ++i) {
                         if (_types[i] == curName) {
@@ -105,7 +122,8 @@ class TemplateEditorState extends State<TemplateEditor> {
     );
   }
 
-  Future<void> _newObjectEnumDialog(BuildContext context, Template template, String title) {
+  Future<void> _newObjectEnumDialog(
+      BuildContext context, Template template, String title) {
     _objectName.text = "";
     final formKey = GlobalKey<FormState>();
     return showDialog<void>(
@@ -117,7 +135,7 @@ class TemplateEditorState extends State<TemplateEditor> {
           child: TextFormField(
             controller: _objectName,
             decoration: const InputDecoration(
-              hintText: 'Please write a username',
+              hintText: 'Please write an object name',
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -138,19 +156,24 @@ class TemplateEditorState extends State<TemplateEditor> {
             children: [
               TextButton(
                 child: const Text('Cancel'),
-                onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop('dialog'),
               ),
               TextButton(
-                child: Text('Create'),
+                child: const Text('Create'),
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
-                    setState(() => template.objects.add((_objectName.text, List.empty(growable: true))));
+                    setState(() => template.objects
+                        .add((_objectName.text, List.empty(growable: true))));
                     _types.add(_objectName.text);
                     Navigator.of(context, rootNavigator: true).pop();
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => TemplateEditor(
-                            title: _objectName.text, mainTemplate: false, exitCallback: exitCallback, template: template),
+                            title: _objectName.text,
+                            mainTemplate: false,
+                            exitCallback: exitCallback,
+                            template: template),
                       ),
                     );
                   }
@@ -177,12 +200,14 @@ class TemplateEditorState extends State<TemplateEditor> {
             content: Text(content),
             actions: <Widget>[
               TextButton(
-                style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
                 child: Text(cancel),
                 onPressed: () => Navigator.pop(context, false),
               ),
               TextButton(
-                style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
                 child: Text(confirm),
                 onPressed: () => Navigator.pop(context, true),
               ),
@@ -192,7 +217,8 @@ class TemplateEditorState extends State<TemplateEditor> {
       );
 
   void exitCallback((String, List<(String, String?)>) objectEntry) {
-    int index = template.objects.indexWhere((element) => element.$1 == objectEntry.$1);
+    int index =
+        template.objects.indexWhere((element) => element.$1 == objectEntry.$1);
     template.objects[index] = objectEntry;
   }
 
@@ -213,7 +239,8 @@ class TemplateEditorState extends State<TemplateEditor> {
     if (widget.mainTemplate) {
       currentList = template.template;
     } else {
-      index = template.objects.indexWhere((element) => element.$1 == widget.title);
+      index =
+          template.objects.indexWhere((element) => element.$1 == widget.title);
       currentList = template.objects[index].$2;
     }
     return PopScope(
@@ -226,7 +253,8 @@ class TemplateEditorState extends State<TemplateEditor> {
         } else {
           final bool shouldPop = (await _showWarningDialog(
                 title: 'Exiting template creator',
-                content: 'Are you sure you want to leave this page? Unsaved changes will be discarded.',
+                content:
+                    'Are you sure you want to leave this page? Unsaved changes will be discarded.',
                 cancel: 'Stay',
                 confirm: 'Leave',
               )) ??
@@ -236,7 +264,8 @@ class TemplateEditorState extends State<TemplateEditor> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: Text(widget.title),
           actions: [
             if (widget.mainTemplate)
@@ -244,32 +273,69 @@ class TemplateEditorState extends State<TemplateEditor> {
                 icon: const Icon(Icons.save),
                 onPressed: () {
                   showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Center(child: Text('Template name')),
-                      content: TextField(controller: _templateName),
-                      actions: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextButton(
-                              child: const Text('Cancel'),
-                              onPressed: () => Navigator.of(context, rootNavigator: true).pop('dialog'),
-                            ),
-                            TextButton(
-                              child: const Text('Save'),
-                              onPressed: () {
-                                template.name = _templateName.text;
-                                FirebaseFirestore.instance.collection('templates').add(template.toMap());
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
+                      context: context,
+                      builder: (context) {
+                        if (widget.documentId == null) {
+                          return AlertDialog(
+                            title: const Center(child: Text('Template name')),
+                            content: TextField(controller: _templateName),
+                            actions: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    child: const Text('Cancel'),
+                                    onPressed: () => Navigator.of(context,
+                                            rootNavigator: true)
+                                        .pop('dialog'),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Save'),
+                                    onPressed: () {
+                                      template.name = _templateName.text;
+                                      FirebaseFirestore.instance
+                                          .collection('templates')
+                                          .add(template.toMap());
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        } else {
+                          return AlertDialog(
+                            title: const Center(
+                                child:
+                                    Text('Do you want to save your changes?')),
+                            actions: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    child: const Text('Cancel'),
+                                    onPressed: () => Navigator.of(context,
+                                            rootNavigator: true)
+                                        .pop('dialog'),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Save'),
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection('templates')
+                                          .doc(widget.documentId) // Specify the document ID you want to update
+                                          .update(template.toMap()); // Update the document with new data
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
+                        }
+                      });
                 },
               ),
             if (widget.mainTemplate)
@@ -289,7 +355,11 @@ class TemplateEditorState extends State<TemplateEditor> {
                     SizedBox(
                       height: 100,
                       child: DrawerHeader(
-                        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.75)),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.75)),
                         child: const Center(child: Text('Objects & Enums')),
                       ),
                     ),
@@ -317,27 +387,40 @@ class TemplateEditorState extends State<TemplateEditor> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.edit_note),
-                              onPressed: () =>
-                                  _editObjectEnumDialog(context, template, 'Rename Object', template.objects[i].$1, true),
+                              onPressed: () => _editObjectEnumDialog(
+                                  context,
+                                  template,
+                                  'Rename Object',
+                                  template.objects[i].$1,
+                                  true),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete),
                               onPressed: () async {
-                                final bool shouldDelete = await _showWarningDialog(
-                                      title: 'Deleting object',
-                                      content: 'Are you sure you want to delete this object?',
-                                      cancel: 'No',
-                                      confirm: 'Yes',
-                                    ) ??
-                                    false;
+                                final bool shouldDelete =
+                                    await _showWarningDialog(
+                                          title: 'Deleting object',
+                                          content:
+                                              'Are you sure you want to delete this object?',
+                                          cancel: 'No',
+                                          confirm: 'Yes',
+                                        ) ??
+                                        false;
                                 if (shouldDelete) {
-                                  for (int j = 0; j < template.objects.length; ++j) {
-                                    template.objects[j].$2.removeWhere((element) => element.$2 == template.objects[i].$1);
+                                  for (int j = 0;
+                                      j < template.objects.length;
+                                      ++j) {
+                                    template.objects[j].$2.removeWhere(
+                                        (element) =>
+                                            element.$2 ==
+                                            template.objects[i].$1);
                                   }
-                                  template.template.removeWhere((element) => element.$2 == template.objects[i].$1);
+                                  template.template.removeWhere((element) =>
+                                      element.$2 == template.objects[i].$1);
                                   _types.remove(template.objects[i].$1);
                                   setState(() {
-                                    template.objects.removeWhere((element) => element.$1 == template.objects[i].$1);
+                                    template.objects.removeWhere((element) =>
+                                        element.$1 == template.objects[i].$1);
                                   });
                                 }
                               },
@@ -358,7 +441,8 @@ class TemplateEditorState extends State<TemplateEditor> {
                                 alignment: Alignment.bottomLeft,
                                 child: IconButton(
                                   icon: const Icon(Icons.add),
-                                  onPressed: () => _newObjectEnumDialog(context, template, 'New Object name'),
+                                  onPressed: () => _newObjectEnumDialog(
+                                      context, template, 'New Object name'),
                                 ),
                               ),
                               Expanded(
@@ -366,7 +450,8 @@ class TemplateEditorState extends State<TemplateEditor> {
                                   alignment: Alignment.bottomRight,
                                   child: IconButton(
                                     icon: const Icon(Icons.category),
-                                    onPressed: () => _newObjectEnumDialog(context, template, 'New Enum name'),
+                                    onPressed: () => _newObjectEnumDialog(
+                                        context, template, 'New Enum name'),
                                   ),
                                 ),
                               ),
@@ -384,7 +469,10 @@ class TemplateEditorState extends State<TemplateEditor> {
             child: Column(
               children: [
                 Table(
-                  columnWidths: const {0: FlexColumnWidth(1), 1: IntrinsicColumnWidth()},
+                  columnWidths: const {
+                    0: FlexColumnWidth(1),
+                    1: IntrinsicColumnWidth()
+                  },
                   defaultVerticalAlignment: TableCellVerticalAlignment.top,
                   children: [
                     for (int i = 0; i < currentList.length; ++i)
@@ -397,9 +485,11 @@ class TemplateEditorState extends State<TemplateEditor> {
                               onChanged: (text) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    template.template[i] = (text, currentList[i].$2);
+                                    template.template[i] =
+                                        (text, currentList[i].$2);
                                   } else {
-                                    template.objects[index].$2[i] = (text, currentList[i].$2);
+                                    template.objects[index].$2[i] =
+                                        (text, currentList[i].$2);
                                   }
                                 });
                               },
@@ -409,14 +499,17 @@ class TemplateEditorState extends State<TemplateEditor> {
                               value: currentList[i].$2,
                               items: _types
                                   .where((t) => t != widget.title)
-                                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                                  .map((type) => DropdownMenuItem(
+                                      value: type, child: Text(type)))
                                   .toList(),
                               onChanged: (type) {
                                 setState(() {
                                   if (widget.mainTemplate) {
-                                    template.template[i] = (currentList[i].$1, type);
+                                    template.template[i] =
+                                        (currentList[i].$1, type);
                                   } else {
-                                    template.objects[index].$2[i] = (currentList[i].$1, type);
+                                    template.objects[index].$2[i] =
+                                        (currentList[i].$1, type);
                                   }
                                 });
                               })
