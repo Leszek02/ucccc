@@ -16,7 +16,8 @@ class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: const Text('Templates'),
           actions: [
             IconButton(
@@ -25,13 +26,19 @@ class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
                 context: context,
                 builder: (context) => _ImportForm(
                   onConfirm: (code) async => download(code).then(
-                    (template) => FirebaseFirestore.instance.collection('templates').add(template.toMap()),
+                    (template) => FirebaseFirestore.instance
+                        .collection('templates')
+                        .add(template.toMap()),
                     onError: (error) => showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Error'),
                         content: Form(child: Text(error.toString())),
-                        actions: [TextButton(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
+                        actions: [
+                          TextButton(
+                              child: const Text('OK'),
+                              onPressed: () => Navigator.of(context).pop())
+                        ],
                       ),
                     ),
                   ),
@@ -42,13 +49,15 @@ class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
         ),
         body: Center(
           child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('templates').snapshots(),
+            stream:
+                FirebaseFirestore.instance.collection('templates').snapshots(),
             builder: (context, snapshot) => !snapshot.hasData
                 ? const Text('Loading...')
                 : ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) => _TemplateView(
-                      template: Template.fromMap(snapshot.data!.docs[index].data()),
+                      template:
+                          Template.fromMap(snapshot.data!.docs[index].data()),
                       document: snapshot.data!.docs[index].reference,
                     ),
                   ),
@@ -97,56 +106,104 @@ class _TemplateView extends StatelessWidget {
 
   const _TemplateView({required this.template, required this.document});
 
+  Future<void> _editTemplateName(
+      BuildContext context, Template template, String documentId) {
+    final controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    controller.text = template.name;
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Center(child: const Text("Rename object")),
+        content: Form(
+          key: formKey,
+          child: TextField(controller: controller),
+        ),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () =>
+                    Navigator.of(context, rootNavigator: true).pop('dialog'),
+              ),
+              TextButton(
+                child: const Text('Rename'),
+                onPressed: () {
+                  template.name = controller.text;
+                  FirebaseFirestore.instance
+                      .collection('templates')
+                      .doc(
+                          documentId) // Specify the document ID you want to update
+                      .update(template
+                          .toMap()); // Update the document with new data
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Card(
-          color: Colors.purple.shade100,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  template.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: () => upload(template).then(
-                  (code) => SocialShare.shareOptions('Here\'s the code for my UCCCC template "${template.name}". '
-                      'Paste it in the "import shared template" window in the Templates menu. '
-                      'This code is valid for 10 minutes. $code'),
-                  onError: (error) => showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Error'),
-                      content: Form(child: Text(error.toString())),
-                      actions: [TextButton(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
-                    ),
+            color: Colors.purple.shade100,
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TemplateEditor(
+                    title: template.name,
+                    mainTemplate: true,
+                    template: template,
+                    documentId: document.id,
                   ),
                 ),
               ),
-              IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TemplateEditor(
-                          title: template.name,
-                          mainTemplate: true,
-                          template: template,
-                          documentId: document.id,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      template.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.share),
+                    onPressed: () => upload(template).then(
+                      (code) => SocialShare.shareOptions(
+                          'Here\'s the code for my UCCCC template "${template.name}". '
+                          'Paste it in the "import shared template" window in the Templates menu. '
+                          'This code is valid for 10 minutes. $code'),
+                      onError: (error) => showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Error'),
+                          content: Form(child: Text(error.toString())),
+                          actions: [
+                            TextButton(
+                                child: const Text('OK'),
+                                onPressed: () => Navigator.of(context).pop())
+                          ],
                         ),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit)), // Navigator.push(...)
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: document.delete,
+                    ),
+                  ),
+                  IconButton(
+                      onPressed: () =>
+                          _editTemplateName(context, template, document.id),
+                      icon: const Icon(Icons.edit)), // Navigator.push(...)
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: document.delete,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            )),
       );
 }

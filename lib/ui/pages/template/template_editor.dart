@@ -324,8 +324,10 @@ class TemplateEditorState extends State<TemplateEditor> {
                                     onPressed: () {
                                       FirebaseFirestore.instance
                                           .collection('templates')
-                                          .doc(widget.documentId) // Specify the document ID you want to update
-                                          .update(template.toMap()); // Update the document with new data
+                                          .doc(widget
+                                              .documentId) // Specify the document ID you want to update
+                                          .update(template
+                                              .toMap()); // Update the document with new data
                                       Navigator.of(context).pop();
                                       Navigator.of(context).pop();
                                     },
@@ -363,8 +365,8 @@ class TemplateEditorState extends State<TemplateEditor> {
                         child: const Center(child: Text('Objects & Enums')),
                       ),
                     ),
-                    Text("Your Objects"),
-                    Divider(color: Colors.black),
+                    const Text("Your Objects"),
+                    const Divider(color: Colors.black),
                     for (int i = 0; i < template.objects.length; ++i)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -428,9 +430,9 @@ class TemplateEditorState extends State<TemplateEditor> {
                           ],
                         ),
                       ),
-                    Divider(color: Colors.black),
-                    Text('Your Enums'),
-                    Divider(color: Colors.black),
+                    const Divider(color: Colors.black),
+                    const Text('Your Enums'),
+                    const Divider(color: Colors.black),
                     if (widget.mainTemplate)
                       Expanded(
                         child: Padding(
