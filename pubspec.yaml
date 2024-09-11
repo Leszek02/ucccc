@@ -35,6 +35,8 @@ dependencies:
     sdk: flutter
   flutter_animate:
   flutter_splash_screen:
+  http: ^0.13.3
+  social_share:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

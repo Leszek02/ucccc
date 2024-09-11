@@ -2,10 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:ucccc/firebase_options.dart';
-import 'package:ucccc/ui/main_scaffold.dart';
 import 'package:ucccc/ui/widgets/splash_screen.dart';
+import 'package:ucccc/util/pastebin_communication.dart';
+
 
 void main() async {
+  PASTEBIN_API_KEY = '44649d0b013cfc04c3a7bcadad511ef7'; // TODO remove this later pls :)
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);

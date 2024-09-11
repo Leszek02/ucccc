@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:social_share/social_share.dart';
 import 'package:ucccc/data/template.dart';
 import 'package:ucccc/ui/pages/template/template_editor.dart';
-import 'package:ucccc/ui/widgets/circle_button.dart';
-import 'package:ucccc/util/utility.dart';
+import 'package:ucccc/util/pastebin_communication.dart';
 
 class CharactersDatabasePage extends StatefulWidget {
   const CharactersDatabasePage({super.key});
@@ -14,25 +13,42 @@ class CharactersDatabasePage extends StatefulWidget {
 }
 
 class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
-  String _displayedName = "default";
-
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          backgroundColor:
-              Theme.of(context).colorScheme.primary.withOpacity(0.75),
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.75),
           title: const Text('Templates'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.download_rounded),
+              onPressed: () => showDialog(
+                context: context,
+                builder: (context) => _ImportForm(
+                  onConfirm: (code) async => download(code).then(
+                    (template) => FirebaseFirestore.instance.collection('templates').add(template.toMap()),
+                    onError: (error) => showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Error'),
+                        content: Form(child: Text(error.toString())),
+                        actions: [TextButton(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         body: Center(
           child: StreamBuilder(
-            stream:
-                FirebaseFirestore.instance.collection('templates').snapshots(),
+            stream: FirebaseFirestore.instance.collection('templates').snapshots(),
             builder: (context, snapshot) => !snapshot.hasData
                 ? const Text('Loading...')
                 : ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) => _TemplateView(
-                      templateData: snapshot.data!.docs[index].data(),
+                      template: Template.fromMap(snapshot.data!.docs[index].data()),
                       document: snapshot.data!.docs[index].reference,
                     ),
                   ),
@@ -41,11 +57,45 @@ class _CharactersDatabasePageState extends State<CharactersDatabasePage> {
       );
 }
 
+class _ImportForm extends StatefulWidget {
+  final void Function(String) onConfirm;
+
+  const _ImportForm({required this.onConfirm});
+
+  @override
+  State<_ImportForm> createState() => _ImportFormState();
+}
+
+class _ImportFormState extends State<_ImportForm> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Paste the code here'),
+        content: TextField(controller: _controller),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              widget.onConfirm(_controller.text);
+            },
+            child: const Text('OK'),
+          )
+        ],
+      );
+}
+
 class _TemplateView extends StatelessWidget {
   final DocumentReference document;
-  final Map<String, dynamic> templateData;
+  final Template template;
 
-  const _TemplateView({required this.templateData, required this.document});
+  const _TemplateView({required this.template, required this.document});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -56,20 +106,33 @@ class _TemplateView extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  templateData['name'] ?? '<default>',
+                  template.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // TODO Leszusiu odbierz prosze :((( (zrob edycje template)
+              IconButton(
+                icon: const Icon(Icons.share),
+                onPressed: () => upload(template).then(
+                  (code) => SocialShare.shareOptions('Here\'s the code for my UCCCC template "${template.name}". '
+                      'Paste it in the "import shared template" window in the Templates menu. '
+                      'This code is valid for 10 minutes. $code'),
+                  onError: (error) => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Error'),
+                      content: Form(child: Text(error.toString())),
+                      actions: [TextButton(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
+                    ),
+                  ),
+                ),
+              ),
               IconButton(
                   onPressed: () {
-                    Template template = Template.empty();
-                    template = template.transformFromMap(templateData);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => TemplateEditor(
-                          title: templateData['name'],
+                          title: template.name,
                           mainTemplate: true,
                           template: template,
                         ),

@@ -5,6 +5,7 @@ import 'package:ucccc/ui/pages/characters_database/character_database.dart';
 import 'package:ucccc/ui/pages/templates_databse/templates_database.dart';
 import 'package:ucccc/ui/pages/template/template_editor.dart';
 import 'package:ucccc/ui/widgets/circle_button.dart';
+import 'package:ucccc/util/pastebin_communication.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({super.key});
@@ -55,16 +56,7 @@ class MainScaffold extends StatelessWidget {
                             CircleButton(
                               size: 32,
                               icon: Icons.cookie_outlined,
-                              onPressed: () async {
-                                final templates = FirebaseFirestore.instance.collection('templates');
-                                // final query = templates.count();
-                                // final AggregateQuerySnapshot result = await query.get();
-                                // print(result.count);
-                                final result = await templates.get();
-                                for (final template in result.docs) {
-                                  print(template.data());
-                                }
-                              },
+                              onPressed: () => print('Ciastko testowe'),
                             ),
                             CircleButton(
                               size: 64,
